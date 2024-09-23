@@ -31,8 +31,18 @@ jobs:
       - name: Dummy step
         run: sleep '${{ inputs.sleep-seconds }}'
 
-  slack-post-workflow-end:
+  job-2:
     needs: [job-1]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dummy step
+        run: sleep 1
+
+  slack-post-workflow-end:
+    needs: [job-2]
     runs-on: ubuntu-latest
     if: always()
     steps:
