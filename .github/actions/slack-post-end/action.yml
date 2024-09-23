@@ -1,0 +1,44 @@
+name: Slack post end
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set parameters
+      id: set-parameters
+      run: |
+        job_conclusions=$(
+          gh run view '${{ github.run_id }}' --json jobs \
+            | jq -c '[.jobs[].conclusion | select(. != "")]'
+        )
+
+        if [ "${job_conclusions}" == '[]' ]; then
+          workflow_conclusion='${{ job.status }}'
+        else
+          if [[ "${job_conclusions}" =~ 'failure' ]]; then
+            workflow_conclusion=failure
+          elif [[ "${job_conclusions}" =~ 'canceled' ]]; then
+            workflow_conclusion=canceled
+          else
+            workflow_conclusion=success
+          fi
+        fi
+
+        if [ "${workflow_conclusion}" == 'failure' ]; then
+          echo 'result-message=失敗しました' >> $GITHUB_OUTPUT
+          echo 'color-code=red' >> $GITHUB_OUTPUT
+        elif [ "${workflow_conclusion}" == 'canceled' ]; then
+          echo 'result-message=キャンセルされました' >> $GITHUB_OUTPUT
+          echo 'color-code=gray' >> $GITHUB_OUTPUT
+        else
+          echo 'result-message=成功しました' >> $GITHUB_OUTPUT
+          echo 'color-code=green' >> $GITHUB_OUTPUT
+        fi
+      env:
+        GH_TOKEN: ${{ github.token }}
+      shell: bash
+
+    - name: Slack post
+      uses: ./.github/actions/slack-post
+      with:
+        text: '[${{ github.event.inputs.env }}] ${{ github.workflow }} が${{ steps.set-parameters.outputs.result-message }}'
+        color-code: '${{ steps.set-parameters.outputs.color-code }}'
