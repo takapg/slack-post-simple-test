@@ -1,0 +1,19 @@
+name: Slack post
+
+inputs:
+  text:
+    required: true
+    type: string
+  color-code:
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Slack post
+      id: slack-post
+      run: |
+        echo 'color: ${{ inputs.color-code }}
+        ${{ inputs.text }}' >> $GITHUB_STEP_SUMMARY
+      shell: bash
