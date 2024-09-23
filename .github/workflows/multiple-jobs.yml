@@ -1,0 +1,43 @@
+name: Multiple jobs
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        required: true
+        type: string
+        default: staging
+      sleep-seconds:
+        required: true
+        type: string
+        default: '1'
+
+jobs:
+  slack-post-start:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Slack post start
+        uses: ./.github/actions/slack-post-start
+
+  job-1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dummy step
+        run: sleep '${{ inputs.sleep-seconds }}'
+
+  slack-post-workflow-end:
+    needs: [job-1]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Slack post end
+        uses: ./.github/actions/slack-post-end
