@@ -1,0 +1,30 @@
+name: Single job
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        required: true
+        type: string
+        default: staging
+      sleep-seconds:
+        required: true
+        type: string
+        default: '1'
+
+jobs:
+  job-1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Slack post start
+        uses: ./.github/actions/slack-post-start
+
+      - name: Dummy step
+        run: sleep '${{ inputs.sleep-seconds }}'
+
+      - name: Slack post end
+        if: always()
+        uses: ./.github/actions/slack-post-end
