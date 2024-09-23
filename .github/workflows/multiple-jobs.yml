@@ -41,7 +41,7 @@ jobs:
       - name: Dummy step
         run: sleep 1
 
-  slack-post-workflow-end:
+  slack-post-end:
     needs: [job-2]
     runs-on: ubuntu-latest
     if: always()
